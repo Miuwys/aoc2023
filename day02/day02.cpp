@@ -15,11 +15,27 @@ struct game {
     std::vector<draw> draws;
 };
 
-draw parse_box(std::string_view box) {
-    size_t amount_size = box.find(' ');
-    size_t amount;
-    std::from_chars(box.data(), box.data() + amount_size, amount);
+std::vector<std::string_view> split(std::string_view str, char split_char) {
+    std::vector<std::string_view> result{};
+    for (size_t idx = str.find(split_char); idx != std::string_view::npos;
+         idx = str.find(split_char)) {
+        result.push_back(str.substr(0, idx));
+        str.remove_prefix(idx + 1);
+    }
+    result.push_back(str);
+    return result;
+}
 
+size_t extract_number(std::string_view str) {
+    size_t start = str.find_first_of("0123456789");
+    size_t stop = str.find_last_of("0123456789") + 1;
+    size_t result;
+    std::from_chars(str.data() + start, str.data() + stop, result);
+    return result;
+}
+
+draw parse_box(std::string_view box) {
+    size_t amount = extract_number(box);
     if (box.find("red") != std::string_view::npos) {
         return {.r = amount, .g = 0, .b = 0};
     } else if (box.find("green") != std::string_view::npos) {
@@ -32,43 +48,32 @@ draw parse_box(std::string_view box) {
 
 draw parse_draw(std::string_view draw_str) {
     draw current{.r = 0, .g = 0, .b = 0};
-    for (size_t comma = draw_str.find(','); comma != std::string_view::npos;
-         comma = draw_str.find(',')) {
-        auto box = draw_str.substr(0, comma);
+    auto box_split = split(draw_str, ',');
+    for (std::string_view box : box_split) {
         auto result = parse_box(box);
         current.r += result.r;
         current.g += result.g;
         current.b += result.b;
-        draw_str.remove_prefix(comma + 2);
     }
-    auto result = parse_box(draw_str);
-    current.r += result.r;
-    current.g += result.g;
-    current.b += result.b;
-
     return current;
 }
 
 std::vector<game> parse_games(const std::vector<std::string_view> &input) {
     std::vector<game> result{};
     for (std::string_view str : input) {
-        // Remove Game
-        str.remove_prefix(5);
-        size_t game_id;
-        size_t game_id_length = str.find(':');
-        std::from_chars(str.data(), str.data() + game_id_length, game_id);
-        str.remove_prefix(game_id_length + 2);
+        auto game_split = split(str, ':');
 
-        std::vector<std::string_view> draws;
-        for (size_t semicolon = str.find(';');
-             semicolon != std::string_view::npos; semicolon = str.find(';')) {
-            draws.push_back(str.substr(0, semicolon));
-            str.remove_prefix(semicolon + 2);
-        }
-        draws.push_back(str);
+        std::string_view game = game_split.at(0);
+        // Remove Game
+        game.remove_prefix(5);
+        size_t game_id;
+        std::from_chars(game.data(), game.data() + game.length(), game_id);
+
+        std::string_view draws = game_split.at(1);
+        auto draws_split = split(draws, ';');
 
         std::vector<draw> draws_struct;
-        for (std::string_view draw : draws) {
+        for (std::string_view draw : draws_split) {
             draws_struct.push_back(parse_draw(draw));
         }
         result.push_back({
