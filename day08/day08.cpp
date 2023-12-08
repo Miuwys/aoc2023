@@ -36,7 +36,6 @@ bool contains(std::string_view str, std::string_view search) {
     return str.find(search) != std::string_view::npos;
 }
 
-using hand = std::string_view;
 struct problem {
     std::string_view steps;
     std::map<std::string_view, std::pair<std::string_view, std::string_view>>
