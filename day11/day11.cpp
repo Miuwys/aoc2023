@@ -8,7 +8,8 @@
 
 using problem = std::map<std::pair<size_t, size_t>, size_t>;
 
-problem parse_input(const std::vector<std::string_view> &input, size_t empty_space_size) {
+problem parse_input(const std::vector<std::string_view> &input,
+                    size_t empty_space_size) {
     problem result{};
     std::map<size_t, bool> empty_rows{};
     std::map<size_t, bool> empty_columns{};
@@ -35,12 +36,12 @@ problem parse_input(const std::vector<std::string_view> &input, size_t empty_spa
     for (size_t i{0}, actual_row{0}; i < input.size(); ++i, ++actual_row) {
         const auto &row = input.at(i);
         if (empty_rows.contains(i)) {
-            actual_row += empty_space_size-1;
+            actual_row += empty_space_size - 1;
         }
         for (size_t j{0}, actual_col{0}; j < row.size(); ++j, ++actual_col) {
-        if (empty_columns.contains(j)) {
-            actual_col += empty_space_size-1;
-        }
+            if (empty_columns.contains(j)) {
+                actual_col += empty_space_size - 1;
+            }
             if (row.at(j) == '#') {
                 result[{actual_row, actual_col}] = galaxy_number++;
             }
@@ -61,7 +62,7 @@ size_t sum_of_distances(problem p) {
             std::pair<size_t, size_t> i_coord = i->first;
             std::pair<size_t, size_t> j_coord = j->first;
             auto distance = abs_diff(i_coord.first, j_coord.first) +
-                   abs_diff(i_coord.second, j_coord.second);
+                            abs_diff(i_coord.second, j_coord.second);
             sum += distance;
         }
     }
